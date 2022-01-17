@@ -28,21 +28,11 @@ const cloudinaryStorage = new CloudinaryStorage({
 const parser = multer({ storage: cloudinaryStorage });
 
 //posts endpoints
-// postsRouter.post('/', async (req, res, next) => {
-//     try {
-//         const newPost = new PostModel(req.body)
-//         await newPost.save()
-//         res.status(201).send(newPost)
-//     } catch (error) {
-//         next(error)
-//     }
-// })
-
-//post + img
 postsRouter.post('/', parser.single('postImage'), async (req, res, next) => {
     try {
         const newPost = new PostModel(req.body)
         const imgUrl = req.file.path
+        console.log({ req: req, body: req.body, file: req.file })
         if (imgUrl) {
             newPost.image = imgUrl
             await newPost.save()
@@ -108,21 +98,5 @@ postsRouter.delete('/:postId', async (req, res, next) => {
         next(error)
     }
 })
-
-//post image upload
-// postsRouter.post('/:postId', parser.single('postImage'), async (req, res, next) => {
-//     try {
-//         const post = await PostModel.findById(req.params.postId)
-//         if (post) {
-//             const postToAddImgTo = await PostModel.findByIdAndUpdate(req.params.postId, { $set: { image: req.file.path } }, { new: true })
-//             await postToAddImgTo.save()
-//             res.send(postToAddImgTo)
-//         } else {
-//             next(createHttpError(404, `This post does not exist.`))
-//         }
-//     } catch (error) {
-//         next(error)
-//     }
-// })
 
 export default postsRouter;

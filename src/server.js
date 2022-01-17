@@ -6,7 +6,7 @@ import mongoose from "mongoose";
 import experienceRouter from "./Profiles/experienece.js";
 import postsRouter from "./Posts/posts.js";
 import profilesRouter from "./Profiles/experienece.js";
-import errorHandlers from "./middlewares/errorHandlers.js";
+import { errorHandlers } from "./middlewares/errorHandlers.js";
 
 const server = express();
 const PORT = process.env.PORT;
@@ -24,7 +24,7 @@ mongoose.connection.on("connected", () => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Server listens to ${PORT}`);
+  console.log(`Server listens to ${ PORT }`);
 });
 
 mongoose.connection.on("error", (err) => {
