@@ -7,6 +7,7 @@ const PostSchema = new Schema(
     {
         text: { type: String, required: true },
         image: String,
+        filename: String
         // user: { type: Schema.Types.ObjectId, ref: "Profile", required: true }
     },
     { timestamps: true }

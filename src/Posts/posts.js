@@ -32,7 +32,9 @@ postsRouter.post('/', parser.single('postImage'), async (req, res, next) => {
     try {
         const newPost = new PostModel(req.body)
         newPost.image = req.file.path || ''
+        newPost.filename = req.file.filename || ''
         await newPost.save()
+        console.log(req.file)
         res.status(201).send(newPost)
     } catch (error) {
         next(error)
@@ -84,11 +86,13 @@ postsRouter.delete('/:postId', async (req, res, next) => {
     try {
         const deletedPost = await PostModel.findByIdAndDelete(req.params.postId)
         if (deletedPost) {
+            await cloudinary.uploader.destroy(deletedPost.filename)
             res.status(204).send()
         } else {
             next(createHttpError(404, `This post does not exist or has already been deleted.`))
         }
     } catch (error) {
+        console.log(error)
         next(error)
     }
 })
