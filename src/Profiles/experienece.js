@@ -47,8 +47,9 @@ experienceRouter.route("/:userName/experiences")
 experienceRouter.route("/:userName/experiences/:experienceId")
 .get(async (req, res, next) => {
     try {
-        const user = await ProfileModel.findOne({ userName: req.params.userName })
-        const experience = user.experiences.find(({ _id }) => _id.toString() === req.params.experienceId)
+        const { userName, experienceId } = req.params
+        const user = await ProfileModel.findOne({ userName: userName })
+        const experience = user.experiences.find(({ _id }) => _id.toString() === experienceId)
         res.send(experience)
     } catch (error) {
         next(error)
@@ -56,15 +57,27 @@ experienceRouter.route("/:userName/experiences/:experienceId")
 })
 .put(async (req, res, next) => {
     try {
-        res.send('OK')
+        const { userName, experienceId } = req.params
+        const user = await ProfileModel.findOne({ userName: userName })
+        const experienceIndex = user.experiences.findIndex(({ _id }) => _id.toString() === experienceId )
+        user.experiences[experienceIndex] = { ...user.experiences[experienceIndex].toObject(), ...req.body }
+        user.save()
+        res.send(user.experiences[experienceIndex])
     } catch (error) {
         next(error)
     }
 })
 .delete(async (req, res, next) => {
     try {
-        res.send('OK')
+        const { userName, experienceId } = req.params
+        const updatedUser = await ProfileModel.findOneAndUpdate(
+            { userName: userName }, 
+            { $pull: { experiences: { _id: experienceId } } },
+            { new: true, runValidators: true }    
+        )
+        res.send(updatedUser)
     } catch (error) {
+        console.log(error)
         next(error)
     }
 })
