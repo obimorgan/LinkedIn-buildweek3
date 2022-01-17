@@ -21,7 +21,7 @@ cloudinary.config({
 const cloudinaryStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
-        folder: 'nft-products-mongo',
+        folder: 'LinkedIn-Mongo',
     },
 });
 
