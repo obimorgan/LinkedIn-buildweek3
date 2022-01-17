@@ -68,7 +68,8 @@ postsRouter.get('/:postId', async (req, res, next) => {
 
 postsRouter.put('/:postId', async (req, res, next) => {
     try {
-        const editedPost = await PostModel.findByIdAndUpdate(req.params.postId, req.body, { new: true })
+        const body = { ...req.body, image: req.file ? req.file.path : req.body.image }
+        const editedPost = await PostModel.findByIdAndUpdate(req.params.postId, body, { new: true })
         if (editedPost) {
             res.send(editedPost)
         } else {
