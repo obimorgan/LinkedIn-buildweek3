@@ -31,16 +31,9 @@ const parser = multer({ storage: cloudinaryStorage });
 postsRouter.post('/', parser.single('postImage'), async (req, res, next) => {
     try {
         const newPost = new PostModel(req.body)
-        const imgUrl = req.file.path
-        console.log({ req: req, body: req.body, file: req.file })
-        if (imgUrl) {
-            newPost.image = imgUrl
-            await newPost.save()
-            res.status(201).send(newPost)
-        } else {
-            await newPost.save()
-            res.status(201).send(newPost)
-        }
+        newPost.image = req.file.path || ''
+        await newPost.save()
+        res.status(201).send(newPost)
     } catch (error) {
         next(error)
     }
