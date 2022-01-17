@@ -30,7 +30,8 @@ const profileSchema = new Schema({
             type: String,
             required: true
         },
-        image: String
+        image: String,
+        filename: String
     }, { timeStamps: true }]
 })
 
