@@ -5,6 +5,9 @@ import express from "express";
 
 const profilesRouter = express.Router();
 
-profilesRouter.route("/").get(async, (req, res, next));
+profilesRouter.route("/")
+.get(async (req, res, next) => {
+    
+});
 
 export default profilesRouter;

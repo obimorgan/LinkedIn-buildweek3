@@ -1,4 +1,4 @@
-export default errorHandlers = (err, req, res, next) => {
+export const errorHandlers = (err, req, res, next) => {
     switch(err.name) {
         case 'BadRequestError':
         case 'ValidationError':
