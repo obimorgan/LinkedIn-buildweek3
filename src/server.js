@@ -13,10 +13,10 @@ const PORT = process.env.PORT;
 server.use(cors());
 server.use(express.json());
 
-server.use("/posts", postsRouter);
-server.use("/profiles", profilesRouter, experienceRouter);
+// server.use("/posts", postsRouter);
+server.use("/profiles", profilesRouter);
 
-server.use(errorHandlers)
+server.use(errorHandlers);
 
 mongoose.connect(process.env.MONGO_CONNECTION);
 mongoose.connection.on("connected", () => {
@@ -24,7 +24,7 @@ mongoose.connection.on("connected", () => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Server listens to ${ PORT }`);
+  console.log(`Server listens to ${PORT}`);
 });
 
 mongoose.connection.on("error", (err) => {
