@@ -20,7 +20,7 @@ cloudinary.config({
 const cloudinaryStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: "nft-products-mongo",
+    folder: "LinkedIn-Buildweek3",
   },
 });
 
@@ -32,6 +32,7 @@ profilesRouter.post(
   parser.single("profileImage"),
   async (req, res, next) => {
     try {
+      3;
       const profile = await ProfilesModel.findById(req.params.profileId);
       if (profile) {
         const profileToEdit = await ProfilesModel.findByIdAndUpdate(
@@ -55,33 +56,36 @@ profilesRouter.post(
   }
 );
 
-profilesRouter
-  .route("/")
-  .get(async (req, res, next) => {
-    try {
-      const profiles = await ProfilesModel.find();
-      res.status(200).send(profiles);
-    } catch (error) {
-      console.log(error);
-      next(error);
-    }
-  })
+profilesRouter.route("/").get(async (req, res, next) => {
+  try {
+    const profiles = await ProfilesModel.find();
+    res.status(200).send(profiles);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+});
 
-  .post(async (req, res, next) => {
+profilesRouter.post(
+  "/",
+  parser.single("profileImage"),
+  async (req, res, next) => {
     try {
-      const newprofile = await ProfilesModel(req.body).save();
+      const newprofile = await new ProfilesModel(req.body);
+      newprofile.image = req.file.path || "";
+      await newprofile.save();
       res.status(201).send(newprofile);
     } catch (error) {
       console.log(error);
       next(error);
     }
-  });
+  }
+);
 
 profilesRouter
   .route("/:profilesId")
   .get(async (req, res, next) => {
     try {
-      const profilesId = req.params.profilesId;
       const profiles = await ProfilesModel.findById(profilesId);
       if (profiles) {
         res.status(201).send(profiles);
