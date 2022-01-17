@@ -1,0 +1,36 @@
+{
+  "name": "linkedin-buildweek3",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/obimorgan/LinkedIn-buildweek3.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/obimorgan/LinkedIn-buildweek3/issues"
+  },
+  "homepage": "https://github.com/obimorgan/LinkedIn-buildweek3#readme",
+  "dependencies": {
+    "cloudinary": "^1.28.1",
+    "cors": "^2.8.5",
+    "express": "^4.17.2",
+    "express-validator": "^6.14.0",
+    "http-errors": "^2.0.0",
+    "mongoose": "^6.1.6",
+    "multer": "^1.4.4",
+    "multer-storage-cloudinary": "^4.0.0",
+    "query-to-mongo": "^0.10.1"
+  },
+  "devDependencies": {
+    "dotenv": "^14.1.0",
+    "nodemon": "^2.0.15"
+  }
+}
