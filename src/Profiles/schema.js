@@ -14,6 +14,31 @@ const PofilesModel = new Schema(
     area: { type: String, required: true },
     image: { type: String, required: false },
     username: { type: String, required: true },
+    experiences: [{
+      role: {
+          type: String,
+          required: true
+      },
+      company: {
+          type: String,
+          required: true
+      },
+      startDate: {
+          type: Date,
+          required: true
+      },
+      endDate: Date,
+      description: {
+          type: String,
+          required: true
+      },
+      area: {
+          type: String,
+          required: true
+      },
+      image: String,
+      filename: String
+  }]
   },
   {
     timestamps: true,

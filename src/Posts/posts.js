@@ -3,29 +3,9 @@ import express from "express";
 import PostModel from './schema.js'
 import createHttpError from 'http-errors'
 import q2m from 'query-to-mongo'
-import multer from 'multer'
-import { v2 as cloudinary } from 'cloudinary'
-import { CloudinaryStorage } from 'multer-storage-cloudinary'
+import { parser, cloudinary } from '../utils/cloudinary.js'
 
 const postsRouter = express.Router();
-
-//cloudinary config
-const { CLOUDINARY_NAME, CLOUDINARY_API_KEY, CLOUDINARY_SECRET } = process.env
-
-cloudinary.config({
-    cloud_name: CLOUDINARY_NAME,
-    api_key: CLOUDINARY_API_KEY,
-    api_secret: CLOUDINARY_SECRET
-})
-
-const cloudinaryStorage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-        folder: 'LinkedIn-Mongo',
-    },
-});
-
-const parser = multer({ storage: cloudinaryStorage });
 
 //posts endpoints
 postsRouter.post('/', parser.single('postImage'), async (req, res, next) => {
