@@ -25,7 +25,7 @@ experienceRouter.route('/')
 experienceRouter.route("/:userName/experiences")
 .get(async (req, res, next) => {
     try {
-        const user = await ProfileModel.findOne({userName: req.params.userName})
+        const user = await ProfileModel.findOne({ userName: req.params.userName })
         res.send(user.experiences)
     } catch (error) {
         next(error)
@@ -33,7 +33,12 @@ experienceRouter.route("/:userName/experiences")
 })
 .post(async (req, res, next) => {
     try {
-        res.send('OK')
+        const user = await ProfileModel.findOneAndUpdate(
+            { userName: req.params.userName },
+            { $push: { experiences: req.body } },
+            { new: true, runValidators: true }
+        )
+        res.send(user)
     } catch (error) {
         next(error)
     }
@@ -42,7 +47,9 @@ experienceRouter.route("/:userName/experiences")
 experienceRouter.route("/:userName/experiences/:experienceId")
 .get(async (req, res, next) => {
     try {
-        res.send('OK')
+        const user = await ProfileModel.findOne({ userName: req.params.userName })
+        const experience = user.experiences.find(({ _id }) => _id.toString() === req.params.experienceId)
+        res.send(experience)
     } catch (error) {
         next(error)
     }
