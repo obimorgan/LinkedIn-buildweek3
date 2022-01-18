@@ -8,13 +8,13 @@ import { parser, cloudinary } from '../utils/cloudinary.js'
 const postsRouter = express.Router();
 
 //posts endpoints
-postsRouter.post('/', parser.single('postImage'), async (req, res, next) => {
+postsRouter.post('/:username', parser.single('postImage'), async (req, res, next) => {
     try {
         const newPost = new PostModel(req.body)
+        newPost.username = req.params.username
         newPost.image = req.file.path || ''
         newPost.filename = req.file.filename || ''
         await newPost.save()
-        console.log(req.file)
         res.status(201).send(newPost)
     } catch (error) {
         next(error)
@@ -29,6 +29,7 @@ postsRouter.get('/', async (req, res, next) => {
             .limit(mongoQuery.options.limit)
             .skip(mongoQuery.options.skip)
             .sort(mongoQuery.options.sort)
+            .populate('user')
         res.send({ link: mongoQuery.links('/posts', noOfPosts), pageTotal: Math.ceil(noOfPosts / mongoQuery.options.limit), noOfPosts, posts })
     } catch (error) {
         next(error)
@@ -37,7 +38,7 @@ postsRouter.get('/', async (req, res, next) => {
 
 postsRouter.get('/:postId', async (req, res, next) => {
     try {
-        const foundPost = await PostModel.findById(req.params.postId)
+        const foundPost = await PostModel.findById(req.params.postId).populate('user')
         if (foundPost) {
             res.send(foundPost)
         } else {

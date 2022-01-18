@@ -7,10 +7,12 @@ const PostSchema = new Schema(
     {
         text: { type: String, required: true },
         image: String,
-        filename: String
-        // user: { type: Schema.Types.ObjectId, ref: "Profile", required: true }
+        filename: String,
+        username: String
     },
-    { timestamps: true }
+    { timestamps: true, toJSON: { virtuals: true } }
 )
+
+PostSchema.virtual('user', { ref: 'Profile', localField: 'username', foreignField: 'username', justOne: true })
 
 export default model('Posts', PostSchema)
