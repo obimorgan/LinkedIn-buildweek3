@@ -1,4 +1,4 @@
-import mongoose, { SchemaTypes } from 'mongoose'
+import mongoose from 'mongoose'
 
 const { Schema, model } = mongoose
 
@@ -7,7 +7,7 @@ const jobsSchema = new Schema({
     company: { type: String, required: true },
     area: { type: String, required: true },
     description: { type: String, required: true },
-    salary: { type: String, required: true },
+    salary: { type: Number, required: true },
     type: {
         type: String,
         required: true,
