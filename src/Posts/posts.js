@@ -11,10 +11,12 @@ const postsRouter = express.Router();
 postsRouter.post('/:username', parser.single('postImage'), async (req, res, next) => {
     try {
         const newPost = new PostModel(req.body)
+        console.log(newPost)
         newPost.username = req.params.username
-        newPost.image = req.file.path || ''
-        newPost.filename = req.file.filename || ''
+        newPost.image = req?.file?.path || ''
+        newPost.filename = req?.file?.filename || ''
         await newPost.save()
+        console.log(newPost)
         res.status(201).send(newPost)
     } catch (error) {
         next(error)
@@ -76,6 +78,58 @@ postsRouter.delete('/:postId', async (req, res, next) => {
         console.log(error)
         next(error)
     }
+})
+
+//comments endpoints
+postsRouter.post('/:username/:postId', async (req, res, next) => {
+    try {
+        const postToCommentOn = await PostModel.findByIdAndUpdate(req.params.postId, { $push: { comments: req.body } }, { new: true })
+        if (postToCommentOn) {
+            postToCommentOn.username = req.params.username
+            res.send(postToCommentOn)
+        } else {
+            next(createHttpError(404, `This post does not exist or has been deleted.`))
+        }
+    } catch (error) {
+        next(error)
+    }
+})
+
+postsRouter.get('/:postId/comments', async (req, res, next) => {
+    try {
+        const mongoQuery = q2m(req.query)
+        const post = await PostModel.find({ _id: req.params.postId }, { comments: { $slice: mongoQuery.options.limit } })
+        console.log(post)
+        post ? res.send(post[0].comments) : next(createHttpError(404, `This post does not exist or has been deleted.`))
+    } catch (error) {
+        next(error)
+    }
+})
+
+postsRouter.put('/:postId/comments/:commentId', async (req, res, next) => {
+    try {
+        const post = await PostModel.findById(req.params.postId)
+        if (post) {
+            const commentIndex = post.comments.findIndex(c => c._id.toString() === req.params.commentId)
+            if (commentIndex !== -1) {
+                post.comments[commentIndex] = { ...post.comments[commentIndex].toObject(), ...req.body }
+                await post.save()
+                res.send(post)
+            } else {
+                next(createHttpError(404, `Comment does not exist or has been deleted.`))
+            }
+        } else {
+            next(createHttpError(404, `This post does not exist or has been deleted.`))
+        }
+    } catch (error) {
+        console.log(error)
+        next(error)
+    }
+})
+
+postsRouter.delete('/:postId/comments/:commentId', async (req, res, next) => {
+    const modifiedPost = await PostModel.findByIdAndUpdate(req.params.postId, { $pull: { comments: { _id: req.params.commentId } } }, { new: true })
+    modifiedPost ? res.send(modifiedPost) : next(createHttpError(404, `This post does not exist or has been deleted.`))
 })
 
 export default postsRouter;
