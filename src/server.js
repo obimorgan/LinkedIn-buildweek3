@@ -24,7 +24,7 @@ mongoose.connection.on("connected", () => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Server listens to ${ PORT }`);
+  console.log(`Server listens to ${PORT}`);
 });
 
 mongoose.connection.on("error", (err) => {
