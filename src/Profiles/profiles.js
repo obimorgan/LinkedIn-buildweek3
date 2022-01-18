@@ -3,6 +3,9 @@ import express from "express";
 import ProfilesModel from "./schema.js";
 import createHttpError from "http-errors";
 import { parser, cloudinary } from '../utils/cloudinary.js'
+import { encodeImage, getPDFReadableStream } from '../utils/pdf-tools.js'
+import { pipeline } from "stream";
+import { error } from "console";
 
 const profilesRouter = express.Router({ mergeParams: true });
 
@@ -32,11 +35,12 @@ profilesRouter.post(
   }
 );
 
+
 profilesRouter
-  .route("/:profilesId")
+  .route("/:userName")
   .get(async (req, res, next) => {
     try {
-      const profiles = await ProfilesModel.findById(profilesId);
+      const profiles = await ProfilesModel.findOne({ username: req.params.userName });
       if (profiles) {
         res.status(201).send(profiles);
       } else {
@@ -44,7 +48,7 @@ profilesRouter
           createHttpError(
             404,
             `            The profile with this id:
-            ${profilesId},
+            ${ profilesId },
             is not found`
           )
         );
@@ -78,7 +82,7 @@ profilesRouter
           createHttpError(
             404,
             `The profile with this id:
-            ${profilesId}
+            ${ profilesId }
             is not found`
           )
         );
@@ -105,6 +109,21 @@ profilesRouter
       next(error);
     }
   });
+
+profilesRouter.get('/:userName/pdf', async (req, res, next) => {
+  const user = await ProfilesModel.findOne({ username: req.params.userName })
+  if (user) {
+    const image = await encodeImage(user.image)
+    res.setHeader('Content-Disposition', `attachment; filename=${ user.name }.pdf`)
+    const source = getPDFReadableStream(user, image)
+    pipeline(source, res, error => {
+      if (error) next(error)
+    })
+  } else {
+    next(createHttpError(404, `The profile with this id: ${ profilesId }, is not found`))
+  }
+})
+
 //   //image upload endpoint
 // profilesRouter.post(
 //   "/:profileId/imageUpload",
