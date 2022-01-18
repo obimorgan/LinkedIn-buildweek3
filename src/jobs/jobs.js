@@ -19,6 +19,7 @@ jobsRouter.route('/')
         .skip(skip)
         .limit(limit || 10)
         const pages = Math.ceil(totalJobs / limit || 10)
+        // FIXME:
         // console.log(links('/jobs', totalJobs))
         res.send({ totalJobs, pages, jobs })
     } catch (error) {

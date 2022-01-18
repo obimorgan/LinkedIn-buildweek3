@@ -8,7 +8,9 @@ const profilesRouter = express.Router({ mergeParams: true });
 
 profilesRouter.route("/").get(async (req, res, next) => {
   try {
-    const profiles = await ProfilesModel.find();
+    const profiles = await ProfilesModel.find()
+    .populate('following')
+    .populate('followers')
     res.status(200).send(profiles);
   } catch (error) {
     console.log(error);
@@ -134,4 +136,26 @@ profilesRouter
 //     }
 //   }
 // );
+
+profilesRouter.post('/:profilesId/follow', async (req, res, next) => {
+  try {
+    const { profilesId } = req.params
+    const { userId } = req.body
+    if (profilesId === userId ) return next(createHttpError(400, 'You cannot follow yourself'))
+    const follower = await ProfilesModel.findByIdAndUpdate(
+      profilesId,
+      { $push: { followers: userId } }  
+    )
+    if (!follower) return next(createHttpError(404, `The user with id ${profilesId} could not be found`))
+    const following = await ProfilesModel.findByIdAndUpdate(
+      userId,
+      { $push: { following: profilesId } }  
+    )
+    if (!following) return next(createHttpError(404, `The user with id ${userId} could not be found`))
+    res.send(`You are now following the user with ID ${profilesId}`)
+  } catch (error) {
+    next(error)
+  }
+})
+
 export default profilesRouter;

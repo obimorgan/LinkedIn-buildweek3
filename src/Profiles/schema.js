@@ -13,9 +13,9 @@ const PofilesModel = new Schema(
     title: { type: String, required: true },
     area: { type: String, required: true },
     image: { type: String, required: false },
-    username: { type: String, required: true },
-    // following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }],
-    // followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }],
+    username: { type: String, required: true, unique: true, sparse: true },
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }],
+    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }],
     experiences: [{
       role: {
           type: String,
