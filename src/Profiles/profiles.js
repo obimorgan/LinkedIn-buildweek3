@@ -24,8 +24,12 @@ profilesRouter.post(
   parser.single("profileImage"),
   async (req, res, next) => {
     try {
-      const newprofile = await new ProfilesModel(req.body);
-      newprofile.image = req.file ? req.file.path : req.body.image;
+      const newprofile = await new ProfilesModel({
+        ...req.body,
+        image: req.file ? req.file.path : req.body.image,
+        filename: req?.file?.filename || "",
+      });
+      // newprofile.image = req.file ? req.file.path : req.body.image;
       await newprofile.save();
       res.status(201).send(newprofile);
     } catch (error) {
@@ -95,14 +99,15 @@ profilesRouter
   .delete(async (req, res, next) => {
     try {
       const profilesId = req.params.profilesId;
-      const deleteProfile = await ProfilesModel.findByIdAndDelete(profilesId, {
-        new: true,
-      });
+      const deleteProfile = await ProfilesModel.findByIdAndDelete(profilesId)
       console.log(deleteProfile);
       if (deleteProfile) {
-        res.status(204).send(deleteProfile);
+        const deleteProfileImage = await cloudinary.uploader.destroy(deleteProfile.filename)
+        res.status(204).send();
       } else {
-        next(createHttpError(400, "SyntaxError"));
+        next(
+          createHttpError(400, `We couldnt find this profile id: ${profilesId}`)
+        );
       }
     } catch (error) {
       console.log(error);
