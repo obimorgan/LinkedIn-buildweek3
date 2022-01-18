@@ -5,7 +5,7 @@ import createHttpError from "http-errors";
 import { parser, cloudinary } from '../utils/cloudinary.js'
 import { encodeImage, getPDFReadableStream } from '../utils/pdf-tools.js'
 import { pipeline } from "stream";
-import { error } from "console";
+
 
 const profilesRouter = express.Router({ mergeParams: true });
 
