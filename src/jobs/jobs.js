@@ -67,4 +67,13 @@ jobsRouter.route('/:jobId')
     }
 })
 
+jobsRouter.post(':jobId/apply', async (req, res, next) => {
+    try {
+        const { jobId } = req.params
+        res.status(201).send('Application Succesfful')
+    } catch (error) {
+        next(error)
+    }
+})
+
 export default jobsRouter

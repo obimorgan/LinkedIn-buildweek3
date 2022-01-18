@@ -13,10 +13,10 @@ const jobsSchema = new Schema({
         required: true,
         enum: ['full-time', 'part-time']
     },   
-    applicants: {
+    applicants: [{
         type: Schema.Types.ObjectId,
         ref: 'Profile'
-    }
+    }]
 }, { timestamps: true })
 
 export default model('Job', jobsSchema)
