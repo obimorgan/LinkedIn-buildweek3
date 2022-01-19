@@ -1,83 +1,101 @@
-import PdfPrinter from 'pdfmake'
-import path from 'path'
-import imageToBase64 from 'image-to-base64'
-import { pipeline } from 'stream'
-import { promisify } from 'util'
-import fs from 'fs'
-import { join, dirname } from "path"
-import { fileURLToPath } from 'url'
+/** @format */
+
+import PdfPrinter from "pdfmake";
+import path from "path";
+import imageToBase64 from "image-to-base64";
+import { pipeline } from "stream";
+import { promisify } from "util";
+import fs from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+import { text } from "express";
 
 export const encodeImage = async (imgUrl) => {
-    try {
-        const base64Image = await imageToBase64(imgUrl)
-        return base64Image
-    } catch (error) {
-        console.log(error)
-    }
-}
+  try {
+    const base64Image = await imageToBase64(imgUrl);
+    return base64Image;
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 export const getPDFReadableStream = (data, encodedImage) => {
+  const fonts = {
+    Helvetica: {
+      normal: "Helvetica",
+      bold: "Helvetica-Bold",
+      italics: "Helvetica-Oblique",
+      bolditalics: "Helvetica-BoldOblique",
+    },
+  };
 
-    const fonts = {
-        Helvetica: {
-            normal: 'Helvetica',
-            bold: 'Helvetica-Bold',
-            italics: 'Helvetica-Oblique',
-            bolditalics: 'Helvetica-BoldOblique'
-        },
-    }
+  const printer = new PdfPrinter(fonts);
 
-    const printer = new PdfPrinter(fonts)
-
-    const docDefinition = {
-        content: [
-            {
-                text: `${ data.name }`,
-                style: 'header'
+  const docDefinition = {
+    content: [
+      // Profile header and profile image
+      {
+        alignment: "justify",
+        columns: [
+          {
+            text: `${data.name} ${data.surname}`,
+            style: {
+              fontSize: 45,
+              bold: true,
+              margin: [0, 20],
+              alignment: "left",
+              color: "blue",
+              decoration: "underline",
             },
-            {
-                text: `by ${ data.surname }`,
-                style: 'subheader'
+          },
+          {
+            image: `data:image/${path.extname(
+              data.image
+            )};base64,${encodedImage}`,
+            width: 150,
+            height: 150,
+            style: {
+              alignment: "right",
             },
-            {
-                image: `data:image/${ path.extname(data.image) };base64,${ encodedImage }`,
-                width: 250,
-                height: 250,
-                style: 'centerme'
-            },
-            {
-                text: `${ data.bio }`,
-                style: 'description'
-            }
+          },
         ],
-        styles: {
-            header: {
-                fontSize: 22,
-                bold: true,
-                marginBottom: 8,
-                alignment: 'center'
-            },
-            subheader: {
-                fontSize: 15,
-                bold: true,
-                marginBottom: 8,
-                alignment: 'center'
-            },
-            description: {
-                marginTop: 8,
-                alignment: 'center'
-            },
-            centerme: {
-                alignment: 'center'
-            }
-        },
-        defaultStyle: {
-            font: "Helvetica",
-        }
-    }
-    console.log(docDefinition.content.image)
-    const pdfReadableStream = printer.createPdfKitDocument(docDefinition)
-    pdfReadableStream.end()
+      },
+      {
+        text: `Bio`,
+        style: "header",
+      },
+      {
+        text: `${data.bio}`,
+      },
 
-    return pdfReadableStream
-}
+      //experiences
+      {
+        text: `Experiences`,
+        style: "header",
+      },
+      data.experiences.map(exp => {
+        return { text: `${exp.role}`}
+      }),
+    ],
+    styles: {
+      header: {
+        fontSize: 15,
+        bold: true,
+        marginBottom: 12,
+        marginTop: 12,
+        alignment: "left",
+        color: "blue",
+      },
+    },
+    defaultStyle: {
+      font: "Helvetica",
+      columnGap: 10,
+      margintop: 20,
+    },
+  };
+  console.log(docDefinition.content.image);
+  const pdfReadableStream = printer.createPdfKitDocument(docDefinition);
+  pdfReadableStream.end();
+
+  return pdfReadableStream;
+};
