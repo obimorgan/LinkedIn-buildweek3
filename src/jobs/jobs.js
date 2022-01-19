@@ -75,7 +75,7 @@ jobsRouter.route('/:jobId')
 jobsRouter.post('/:jobId/apply', async (req, res, next) => {
     try {
         const { jobId } = req.params
-        const { userId } = req.params
+        const { userId } = req.body
         const job = await jobsModel.findByIdAndUpdate(
             jobId,
             { $push: { applicants: userId } }

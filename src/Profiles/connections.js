@@ -20,7 +20,6 @@ connectionRouter.post('/send-connection', async (req, res, next) => {
         if (!connectionSent) return next(createHttpError(404, `The user with id ${userId} could not be found`))
         res.send(`You have sent a connection request to the user with ID ${connectionUserId}`)
     } catch (error) {
-        console.log(error);
         next(error)
     }
 })
@@ -70,7 +69,6 @@ connectionRouter.post('/send-connection', async (req, res, next) => {
       if (!secondUser) return next(createHttpError(404, 'Can\'t fiind a user with the ID you provided'))
       res.send('You are now connected')
     } catch (error) {
-      console.log(error);
       next(error)
     }
 })
@@ -91,7 +89,6 @@ connectionRouter.post('/send-connection', async (req, res, next) => {
       if (!secondUser) return next(createHttpError(404, 'Can\'t fiind a user with the ID you provided'))
       res.send('You declined the connection request')
     } catch (error) {
-      console.log(error);
       next(error)
     }
 })
@@ -112,7 +109,6 @@ connectionRouter.post('/send-connection', async (req, res, next) => {
       if (!secondUser) return next(createHttpError(404, 'Can\'t fiind a user with the ID you provided'))
       res.send('You are no longer connected with each other')
     } catch (error) {
-      console.log(error);
       next(error)
     }
 })
