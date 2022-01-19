@@ -7,7 +7,7 @@ import fs from 'fs'
 import { join, dirname } from "path"
 import { fileURLToPath } from 'url'
 
-export const encodeImage = async (imgUrl = 'https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50') => {
+export const encodeImage = async (imgUrl) => {
     try {
         const base64Image = await imageToBase64(imgUrl)
         return base64Image

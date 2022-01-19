@@ -26,7 +26,7 @@ profilesRouter.post(
     try {
       const newprofile = await new ProfilesModel({
         ...req.body,
-        image: req.file ? req.file.path : req.body.image,
+        image: req?.file?.path || 'https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50',
         filename: req?.file?.filename || "",
       });
       // newprofile.image = req.file ? req.file.path : req.body.image;
@@ -120,6 +120,7 @@ profilesRouter.get('/:userName/pdf', async (req, res, next) => {
   if (user) {
     const image = await encodeImage(user.image)
     res.setHeader('Content-Disposition', `attachment; filename=${ user.name }.pdf`)
+    console.log(user)
     const source = getPDFReadableStream(user, image)
     pipeline(source, res, error => {
       if (error) next(error)
