@@ -17,6 +17,7 @@ const PofilesModel = new Schema(
     username: { type: String, required: true, unique: true, sparse: true },
     following: [{ type: Schema.Types.ObjectId, ref: 'Profile' }],
     followers: [{ type: Schema.Types.ObjectId, ref: 'Profile' }],
+    likedPosts: [{ type: Schema.Types.ObjectId, ref: 'Posts' }],
     experiences: [{
       role: { type: String, required: true },
       company: { type: String, required: true },

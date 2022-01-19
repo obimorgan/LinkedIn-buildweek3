@@ -141,9 +141,11 @@ postsRouter.post('/:username/:postId/like', async (req, res, next) => {
             const userLikesPost = await PostModel.findOne({ likes: user._id.toString() })
             if (userLikesPost) {
                 await PostModel.findByIdAndUpdate(req.params.postId, { $pull: { likes: user._id } })
+                await ProfileModel.findOneAndUpdate(req.params.username, { $pull: { likedPosts: post._id } })
                 res.send(`You unliked post with id ${ req.params.postId }`)
             } else {
                 await PostModel.findByIdAndUpdate(req.params.postId, { $push: { likes: user._id } })
+                await ProfileModel.findOneAndUpdate(req.params.username, { $push: { likedPosts: post._id } })
                 res.send(`You like post with id ${ req.params.postId }`)
             }
         } else {
@@ -163,7 +165,6 @@ postsRouter.post('/:username/:postId/comments/:commentId/like', async (req, res,
             if (commentIndex !== -1) {
                 if (post.comments[commentIndex].likes.includes(user._id)) {
                     const likerIndex = post.comments[commentIndex].likes.findIndex(l => l.toString() === user._id.toString())
-                    console.log(likerIndex)
                     post.comments[commentIndex].likes.splice(likerIndex, 1)
                     await post.save()
                     res.send(post.comments[commentIndex])
