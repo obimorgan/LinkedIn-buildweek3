@@ -48,6 +48,7 @@ jobsRouter.route('/:jobId')
 .get(async (req, res, next) => {
     try {
         const { jobId } = req.params
+        if (jobId.length !== 24) return next(createHttpError(400, 'Invalid ID'))
         const job = await jobsModel.findById(jobId)
         if (!job) return next(createHttpError(404, `The Job with id ${jobId} does not exist.`))
         res.send(job)
@@ -58,6 +59,7 @@ jobsRouter.route('/:jobId')
 .put(async (req, res, next) => {
     try {
         const { jobId } = req.params
+        if (jobId.length !== 24) return next(createHttpError(400, 'Invalid ID'))
         const job = await jobsModel.findByIdAndUpdate(jobId, req.body, { new: true, runValidators: true })
         if (!job) return next(createHttpError(404, `The Job with id ${jobId} does not exist.`))
         res.send(job)
@@ -68,6 +70,7 @@ jobsRouter.route('/:jobId')
 .delete(async (req, res, next) => {
     try {
         const { jobId } = req.params
+        if (jobId.length !== 24) return next(createHttpError(400, 'Invalid ID'))
         const job = await jobsModel.findByIdAndDelete(jobId)
         if (!job) return next(createHttpError(404, `The Job with id ${jobId} does not exist.`))
         res.sendStatus(204)
@@ -80,6 +83,7 @@ jobsRouter.post('/:jobId/apply', async (req, res, next) => {
     try {
         const { jobId } = req.params
         const { userId } = req.body
+        if (jobId.length !== 24) return next(createHttpError(400, 'Invalid ID'))
         const job = await jobsModel.findByIdAndUpdate(
             jobId,
             { $push: { applicants: userId } }

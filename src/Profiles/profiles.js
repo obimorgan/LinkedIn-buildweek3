@@ -25,20 +25,22 @@ profilesRouter.route("/")
     next(error)
   }
 })
-.post(createProfileValidator, parser.single("profileImage"), async (req, res, next) => {
+.post(parser.single("profileImage"), createProfileValidator, async (req, res, next) => {
     try {
       const errors = validationResult(req)
       if (!errors.isEmpty()) return next(createHttpError(400, errors))
+      const { name, surname } = req.body
       const newprofile = await new ProfilesModel({
         ...req.body,
-        image:
-          req?.file?.path ||
-          "https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50",
+        username: req.body.username.split(' ').join(''),
+        image: req?.file?.path || `https://ui-avatars.com/api/?name=${name}+${surname}`,
         filename: req?.file?.filename || "",
       })
       await newprofile.save()
       res.status(201).send(newprofile)
     } catch (error) {
+      // FIXME:
+      console.log(error)
       next(error)
     }
 })
@@ -56,26 +58,28 @@ profilesRouter.route("/:userName")
 })
 .put(parser.single("profileImage"), async (req, res, next) => {
   try {
-    const userName = req.params.userName
+    const { userName } = req.params
     const body = {
       ...req.body,
-      image: req.file ? req.file.path : req.body.image,
+      image: req?.file?.path || req.body.image,
     }
-    const editprofiles = await ProfilesModel.findByIdAndUpdate(userName, body, { new: true })
+    const editprofiles = await ProfilesModel.findOneAndUpdate(userName, body, { new: true })
     if (!editprofiles) return next(createHttpError(404, `The user with the username ${userName} is not found`))
     res.send(editprofiles)
   } catch (error) {
+    console.log(error)
     next(error)
   }
 })
 .delete(async (req, res, next) => {
   try {
-    const userName = req.params.userName
-    const deleteProfile = await ProfilesModel.findByIdAndDelete(userName)
+    const { userName } = req.params
+    const deleteProfile = await ProfilesModel.findOneAndDelete(userName)
     console.log(deleteProfile)
     if (!deleteProfile) return next(createHttpError(404, `The user with the username ${userName} is not found`))
-    // TODO: WHAT IF THE USER HAS NOT UPLOADED A CLOUDINARY IMAGE, CHECK FILENAME
-    const deleteProfileImage = await cloudinary.uploader.destroy(deleteProfile.filename)
+    if (deleteProfile.filename) {
+      const deleteProfileImage = await cloudinary.uploader.destroy(deleteProfile.filename)
+    }
     res.sendStatus(204)
   } catch (error) {
     next(error);

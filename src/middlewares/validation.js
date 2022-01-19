@@ -42,7 +42,7 @@ export const createProfileValidator = checkSchema({
             errorMessage: 'You must provide a title'
         }
     },
-    userName: {
+    username: {
         in: ['body'],
         isLength: {
             options: { min: 1 },
@@ -132,11 +132,10 @@ export const createExperienceValidator = checkSchema({
     },
     startDate: {
         in: ['body'],
-        isDate: true,
-        // isLength: {
-        //     options: { min: 1 },
-        //     errorMessage: 'You must provide some text for this comment'
-        // }
+        isLength: {
+            options: { min: 1 },
+            errorMessage: 'You must provide some text for this comment'
+        }
     },
     description: {
         in: ['body'],

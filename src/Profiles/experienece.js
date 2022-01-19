@@ -34,23 +34,26 @@ experienceRouter.route("/:userName/experiences")
     next(error)
   }
 })
-.post(createExperienceValidator, parser.single("experienceCover"), async (req, res, next) => {
+.post(parser.single("experienceCover"), createExperienceValidator, async (req, res, next) => {
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) return next(createHttpError(400, errors))
     const { role, company } = req.body
+    console.log(req.file)
     const experience = {
       ...req.body,
       image: req?.file?.path || `https://ui-avatars.com/api/?name=${company}+${role}`,
       filename: req?.file?.filename || "",
     }
+    // FIXME: 
+    console.log(req.body)
     const user = await ProfilesModel.findOneAndUpdate(
       { userName: req.params.userName },
       { $push: { experiences: experience } },
       { new: true, runValidators: true }
     )
     if (!user) return next(createHttpError(404,`The user with username ${userName} does not exist`))
-    res.send(user)
+    res.send(experience)
   } catch (error) {
     next(error)
   }
@@ -88,13 +91,16 @@ experienceRouter.route("/:userName/experiences/:experienceId")
   try {
     const { userName, experienceId } = req.params
     if (experienceId.length !== 24) return next(createHttpError(400, "Invalid ID"))
-    const updatedUser = await ProfilesModel.findOneAndUpdate(
+    const user = await ProfilesModel.findOneAndUpdate(
       { userName: userName },
       { $pull: { experiences: { _id: experienceId } } },
       { runValidators: true }
     )
-    const oldExperience = updatedUser.experiences.find(({ _id }) => _id.toString() === experienceId)
-    await cloudinary.uploader.destroy(oldExperience.filename)
+    const oldExperience = user.experiences.find(({ _id }) => _id.toString() === experienceId)
+    if (!oldExperience) return next(createHttpError(404, 'This Experience does not exist'))
+    if (oldExperience.filename) {
+      await cloudinary.uploader.destroy(oldExperience.filename)
+    }
     res.status(204).send()
   } catch (error) {
     next(error)

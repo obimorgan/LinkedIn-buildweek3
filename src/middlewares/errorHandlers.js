@@ -5,6 +5,7 @@ export const errorHandlers = (err, req, res, next) => {
         case 'CastError': 
         case 'TypeError': 
         case 'ObjectParameterError': 
+        case 'MongoServerError':
             res.status(400).send(err)
             break
         case 'UnauthorizedError': 

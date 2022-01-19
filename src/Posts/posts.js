@@ -10,12 +10,14 @@ import { createPostValidator, createCommentValidator } from '../middlewares/vali
 const postsRouter = express.Router();
 
 // POSTS ENDPOINTS
-postsRouter.post('/:username', createPostValidator, parser.single('postImage'), async (req, res, next) => {
+postsRouter.post('/:userName', parser.single('postImage'), createPostValidator, async (req, res, next) => {
     try {
+        const { userName } = req.params 
+        if (userName.length < 1) return next(createHttpError(400, 'Invalid ID'))
         const errors = validationResult(req)
         if (!errors.isEmpty()) return next(createHttpError(400, errors))
         const newPost = new PostModel(req.body)
-        newPost.username = req.params.username
+        newPost.username = userName
         newPost.image = req?.file?.path || ''
         newPost.filename = req?.file?.filename || ''
         await newPost.save()
@@ -64,8 +66,9 @@ postsRouter.route(':postId')
     try {
         const deletedPost = await PostModel.findByIdAndDelete(req.params.postId)
         if (!deletedPost) return next(createHttpError(404, `This post does not exist or has already been deleted.`))
-        // TODO: CHECK IF POST HAS FILENAME
-        await cloudinary.uploader.destroy(deletedPost.filename)
+        if (deletedPost.filename) {
+            const deleteProfileImage = await cloudinary.uploader.destroy(deletedPost.filename)
+        }
         res.status(204).send()
     } catch (error) {
         next(error)
