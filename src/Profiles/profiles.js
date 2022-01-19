@@ -63,8 +63,47 @@ profilesRouter.post('/connections/:connectionUserId/accept', async (req, res, ne
   }
 })
 
+profilesRouter.post('/connections/:connectionUserId/decline', async (req, res, next ) => {
+  try {
+    const { connectionUserId } = req.params
+    const { userId } = req.body
+    const user = await ProfilesModel.findByIdAndUpdate(
+      userId,
+      { $pull: { connectionsReceived: connectionUserId } }
+    )
+    if (!user) return next(createHttpError(404, 'Can\'t fiind a user with the ID you provided'))
+    const secondUser = await ProfilesModel.findByIdAndUpdate(
+      connectionUserId,
+      { $pull: { connectionsSent: userId } }
+    )
+    if (!secondUser) return next(createHttpError(404, 'Can\'t fiind a user with the ID you provided'))
+    res.send('You declined the connection request')
+  } catch (error) {
+    console.log(error);
+    next(error)
+  }
+})
 
-// TODO: IF USERS ARE CONNECTED AND ONE UNCONNECTS, REMOVE FROM BOTH PARTIES
+profilesRouter.post('/connections/:connectionUserId/unconnect', async (req, res, next ) => {
+  try {
+    const { connectionUserId } = req.params
+    const { userId } = req.body
+    const user = await ProfilesModel.findByIdAndUpdate(
+      userId,
+      { $pull: { connections: connectionUserId } }
+    )
+    if (!user) return next(createHttpError(404, 'Can\'t fiind a user with the ID you provided'))
+    const secondUser = await ProfilesModel.findByIdAndUpdate(
+      connectionUserId,
+      { $pull: { connections: userId } }
+    )
+    if (!secondUser) return next(createHttpError(404, 'Can\'t fiind a user with the ID you provided'))
+    res.send('You are no longer connected with each other')
+  } catch (error) {
+    console.log(error);
+    next(error)
+  }
+})
 
 profilesRouter.route("/:userName")
 .get(async (req, res, next) => {
@@ -122,7 +161,7 @@ profilesRouter.get('/:userName/pdf', async (req, res, next) => {
   }
 })
 
-profilesRouter.post('/:profilesId/connect', async (req, res, next) => {
+profilesRouter.post('/:profilesId/send-connection', async (req, res, next) => {
   try {
     const { profilesId } = req.params
     const { userId } = req.body
@@ -143,7 +182,7 @@ profilesRouter.post('/:profilesId/connect', async (req, res, next) => {
   }
 })
 
-profilesRouter.post('/:profilesId/unconnect', async (req, res, next) => {
+profilesRouter.post('/:profilesId/withdraw-connection', async (req, res, next) => {
   try {
     const { profilesId } = req.params
     const { userId } = req.body
