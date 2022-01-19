@@ -1,11 +1,8 @@
-/** @format */
+import mongoose from "mongoose"
 
-import mongoose from "mongoose";
+const { Schema, model } = mongoose
 
-const { Schema, model } = mongoose;
-
-const PofilesModel = new Schema(
-  {
+const PofilesModel = new Schema({
     name: { type: String, required: true },
     surname: { type: String, required: true },
     email: { type: String, required: true },
@@ -15,9 +12,10 @@ const PofilesModel = new Schema(
     image: String,
     filename: String,
     username: { type: String, required: true, unique: true, sparse: true },
-    following: [{ type: Schema.Types.ObjectId, ref: 'Profile' }],
-    followers: [{ type: Schema.Types.ObjectId, ref: 'Profile' }],
     likedPosts: [{ type: Schema.Types.ObjectId, ref: 'Posts' }],
+    connections: [{ type: Schema.Types.ObjectId, ref: 'Profile' }],
+    connectionsSent: [{ type: Schema.Types.ObjectId, ref: 'Profile' }],
+    connectionsReceived: [{ type: Schema.Types.ObjectId, ref: 'Profile' }],
     experiences: [{
       role: { type: String, required: true },
       company: { type: String, required: true },
@@ -29,7 +27,6 @@ const PofilesModel = new Schema(
       filename: String
     }],
     applications: [{ type: Schema.Types.ObjectId, ref: 'Job' }]
-  }, { timestamps: true }
-);
+  }, { timestamps: true })
 
-export default model("Profile", PofilesModel);
+export default model("Profile", PofilesModel)

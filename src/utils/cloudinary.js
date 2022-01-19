@@ -15,8 +15,8 @@ const cloudinaryStorage = new CloudinaryStorage({
     params: {
         folder: 'bw3-linkedin-be',
     },
-});
+})
 
-const parser = multer({ storage: cloudinaryStorage });
+const parser = multer({ storage: cloudinaryStorage })
 
 export { parser, cloudinary }

@@ -1,11 +1,6 @@
 import PdfPrinter from 'pdfmake'
 import path from 'path'
 import imageToBase64 from 'image-to-base64'
-import { pipeline } from 'stream'
-import { promisify } from 'util'
-import fs from 'fs'
-import { join, dirname } from "path"
-import { fileURLToPath } from 'url'
 
 export const encodeImage = async (imgUrl) => {
     try {
