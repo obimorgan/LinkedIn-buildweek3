@@ -27,7 +27,9 @@ profilesRouter.route("/")
     try {
       const newprofile = await new ProfilesModel({
         ...req.body,
-        image: req?.file?.path || 'https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50',
+        image:
+          req?.file?.path ||
+          "https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50",
         filename: req?.file?.filename || "",
       })
       await newprofile.save()
@@ -72,9 +74,9 @@ profilesRouter.route("/:userName")
     const deleteProfileImage = await cloudinary.uploader.destroy(deleteProfile.filename)
     res.sendStatus(204)
   } catch (error) {
-    next(error)
+    next(error);
   }
-})
+});
 
 
 profilesRouter.get('/:userName/pdf', async (req, res, next) => {
@@ -89,8 +91,8 @@ profilesRouter.get('/:userName/pdf', async (req, res, next) => {
       if (error) return next(error)
     })
   } catch (error) {
-    next(error)
+    next(error);
   }
-})
+});
 
 export default profilesRouter
