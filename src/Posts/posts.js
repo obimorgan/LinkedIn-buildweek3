@@ -4,12 +4,16 @@ import ProfileModel from '../Profiles/schema.js'
 import createHttpError from 'http-errors'
 import q2m from 'query-to-mongo'
 import { parser, cloudinary } from '../utils/cloudinary.js'
+import { validationResult } from 'express-validator'
+import { createPostValidator, createCommentValidator } from '../middlewares/validation.js'
 
 const postsRouter = express.Router();
 
 // POSTS ENDPOINTS
-postsRouter.post('/:username', parser.single('postImage'), async (req, res, next) => {
+postsRouter.post('/:username', createPostValidator, parser.single('postImage'), async (req, res, next) => {
     try {
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) return next(createHttpError(400, errors))
         const newPost = new PostModel(req.body)
         newPost.username = req.params.username
         newPost.image = req?.file?.path || ''
@@ -69,8 +73,10 @@ postsRouter.route(':postId')
 })
 
 // COMMENTS ENDPOINTS
-postsRouter.post('/:username/:postId', async (req, res, next) => {
+postsRouter.post('/:username/:postId', createCommentValidator, async (req, res, next) => {
     try {
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) return next(createHttpError(400, errors))
         const postToCommentOn = await PostModel.findByIdAndUpdate(req.params.postId, { $push: { comments: req.body } }, { new: true })
         if (!postToCommentOn) return next(createHttpError(404, `This post does not exist or has been deleted.`))
         postToCommentOn.username = req.params.username

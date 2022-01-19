@@ -3,6 +3,8 @@ import ProfilesModel from "./schema.js"
 import createHttpError from "http-errors"
 import { parser, cloudinary } from "../utils/cloudinary.js"
 import { getExpCsv } from "../utils/csv.js"
+import { validationResult } from "express-validator"
+import { createExperienceValidator } from "../middlewares/validation.js"
 
 const experienceRouter = Router()
 
@@ -32,8 +34,10 @@ experienceRouter.route("/:userName/experiences")
     next(error)
   }
 })
-.post(parser.single("experienceCover"), async (req, res, next) => {
+.post(createExperienceValidator, parser.single("experienceCover"), async (req, res, next) => {
   try {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) return next(createHttpError(400, errors))
     const { role, company } = req.body
     const experience = {
       ...req.body,

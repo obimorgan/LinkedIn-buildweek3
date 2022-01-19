@@ -5,6 +5,8 @@ import createHttpError from "http-errors"
 import { parser, cloudinary } from '../utils/cloudinary.js'
 import { encodeImage, getPDFReadableStream } from '../utils/pdf-tools.js'
 import { pipeline } from "stream"
+import { createProfileValidator } from '../middlewares/validation.js'
+import { validationResult } from "express-validator"
 
 const profilesRouter = express.Router({ mergeParams: true })
 
@@ -23,8 +25,10 @@ profilesRouter.route("/")
     next(error)
   }
 })
-.post(parser.single("profileImage"), async (req, res, next) => {
+.post(createProfileValidator, parser.single("profileImage"), async (req, res, next) => {
     try {
+      const errors = validationResult(req)
+      if (!errors.isEmpty()) return next(createHttpError(400, errors))
       const newprofile = await new ProfilesModel({
         ...req.body,
         image:

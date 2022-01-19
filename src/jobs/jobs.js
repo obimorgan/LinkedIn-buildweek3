@@ -3,6 +3,8 @@ import jobsModel from './schema.js'
 import ProfilesModel from '../Profiles/schema.js'
 import createHttpError from 'http-errors'
 import q2m from 'query-to-mongo'
+import { validationResult } from 'express-validator'
+import { createJobValidator } from '../middlewares/validation.js'
 
 const jobsRouter = Router()
 
@@ -31,8 +33,10 @@ jobsRouter.route('/')
         next(error)
     }
 })
-.post(async (req, res, next) => {
+.post(createJobValidator, async (req, res, next) => {
     try {
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) return next(createHttpError(400, errors))
         const job = await new jobsModel(req.body).save()
         res.status(201).send(job)
     } catch (error) {
