@@ -162,7 +162,9 @@ postsRouter.post('/:username/:postId/comments/:commentId/like', async (req, res,
             const commentIndex = post.comments.findIndex(c => c._id.toString() === req.params.commentId)
             if (commentIndex !== -1) {
                 if (post.comments[commentIndex].likes.includes(user._id)) {
-                    post.comments[commentIndex].likes.splice(commentIndex, 1)
+                    const likerIndex = post.comments[commentIndex].likes.findIndex(l => l.toString() === user._id.toString())
+                    console.log(likerIndex)
+                    post.comments[commentIndex].likes.splice(likerIndex, 1)
                     await post.save()
                     res.send(post.comments[commentIndex])
                 } else {
