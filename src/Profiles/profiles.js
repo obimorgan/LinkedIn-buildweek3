@@ -1,11 +1,14 @@
 import express from "express"
 import ProfilesModel from "./schema.js"
+import connectionRouter from "./connections.js"
 import createHttpError from "http-errors"
 import { parser, cloudinary } from '../utils/cloudinary.js'
 import { encodeImage, getPDFReadableStream } from '../utils/pdf-tools.js'
 import { pipeline } from "stream"
 
 const profilesRouter = express.Router({ mergeParams: true })
+
+profilesRouter.use('/connections/:connectionUserId', connectionRouter)
 
 profilesRouter.route("/")
 .get(async (req, res, next) => {
@@ -32,77 +35,6 @@ profilesRouter.route("/")
     } catch (error) {
       next(error)
     }
-})
-
-profilesRouter.post('/connections/:connectionUserId/accept', async (req, res, next ) => {
-  try {
-    const { connectionUserId } = req.params
-    const { userId } = req.body
-    const user = await ProfilesModel.findByIdAndUpdate(
-      userId,
-      { $pull: { connectionsReceived: connectionUserId } }
-    )
-    const user2 = await ProfilesModel.findByIdAndUpdate(
-      userId,
-      { $push: { connections: connectionUserId } }
-    )
-    if (!user) return next(createHttpError(404, 'Can\'t fiind a user with the ID you provided'))
-    const secondUser = await ProfilesModel.findByIdAndUpdate(
-      connectionUserId,
-      { $pull: { connectionsSent: userId } }
-    )
-    const secondUser2 = await ProfilesModel.findByIdAndUpdate(
-      connectionUserId,
-      { $push: { connections: userId } }
-    )
-    if (!secondUser) return next(createHttpError(404, 'Can\'t fiind a user with the ID you provided'))
-    res.send('You are now connected')
-  } catch (error) {
-    console.log(error);
-    next(error)
-  }
-})
-
-profilesRouter.post('/connections/:connectionUserId/decline', async (req, res, next ) => {
-  try {
-    const { connectionUserId } = req.params
-    const { userId } = req.body
-    const user = await ProfilesModel.findByIdAndUpdate(
-      userId,
-      { $pull: { connectionsReceived: connectionUserId } }
-    )
-    if (!user) return next(createHttpError(404, 'Can\'t fiind a user with the ID you provided'))
-    const secondUser = await ProfilesModel.findByIdAndUpdate(
-      connectionUserId,
-      { $pull: { connectionsSent: userId } }
-    )
-    if (!secondUser) return next(createHttpError(404, 'Can\'t fiind a user with the ID you provided'))
-    res.send('You declined the connection request')
-  } catch (error) {
-    console.log(error);
-    next(error)
-  }
-})
-
-profilesRouter.post('/connections/:connectionUserId/unconnect', async (req, res, next ) => {
-  try {
-    const { connectionUserId } = req.params
-    const { userId } = req.body
-    const user = await ProfilesModel.findByIdAndUpdate(
-      userId,
-      { $pull: { connections: connectionUserId } }
-    )
-    if (!user) return next(createHttpError(404, 'Can\'t fiind a user with the ID you provided'))
-    const secondUser = await ProfilesModel.findByIdAndUpdate(
-      connectionUserId,
-      { $pull: { connections: userId } }
-    )
-    if (!secondUser) return next(createHttpError(404, 'Can\'t fiind a user with the ID you provided'))
-    res.send('You are no longer connected with each other')
-  } catch (error) {
-    console.log(error);
-    next(error)
-  }
 })
 
 profilesRouter.route("/:userName")
@@ -156,48 +88,6 @@ profilesRouter.get('/:userName/pdf', async (req, res, next) => {
     pipeline(source, res, error => {
       if (error) return next(error)
     })
-  } catch (error) {
-    next(error)
-  }
-})
-
-profilesRouter.post('/:profilesId/send-connection', async (req, res, next) => {
-  try {
-    const { profilesId } = req.params
-    const { userId } = req.body
-    if (profilesId === userId ) return next(createHttpError(400, 'You cannot connect with yourself'))
-    const connectionReceived = await ProfilesModel.findByIdAndUpdate(
-      profilesId,
-      { $push: { connectionsReceived: userId } }  
-    )
-    if (!connectionReceived) return next(createHttpError(404, `The user with id ${profilesId} could not be found`))
-    const connectionSent = await ProfilesModel.findByIdAndUpdate(
-      userId,
-      { $push: { connectionsSent: profilesId } }  
-    )
-    if (!connectionSent) return next(createHttpError(404, `The user with id ${userId} could not be found`))
-    res.send(`You have sent a connection request to the user with ID ${profilesId}`)
-  } catch (error) {
-    next(error)
-  }
-})
-
-profilesRouter.post('/:profilesId/withdraw-connection', async (req, res, next) => {
-  try {
-    const { profilesId } = req.params
-    const { userId } = req.body
-    if (profilesId === userId ) return next(createHttpError(400, 'You cannot withdraw a connection with yourself'))
-    const unconnectFrom = await ProfilesModel.findByIdAndUpdate(
-      profilesId,
-      { $pull: { connectionsReceived: userId } }  
-    )
-    if (!unconnectFrom) return next(createHttpError(404, `The user with id ${profilesId} could not be found`))
-    const unconnectSender = await ProfilesModel.findByIdAndUpdate(
-      userId,
-      { $pull: { connectionsSent: profilesId } }  
-    )
-    if (!unconnectSender) return next(createHttpError(404, `The user with id ${userId} could not be found`))
-    res.send(`You have withdrawn your connection request to the user with ID ${profilesId}`)
   } catch (error) {
     next(error)
   }

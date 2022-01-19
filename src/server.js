@@ -6,6 +6,7 @@ import profilesRouter from "./Profiles/profiles.js"
 import experienceRouter from "./Profiles/experienece.js"
 import jobsRouter from './jobs/jobs.js'
 import { errorHandlers } from "./middlewares/errorHandlers.js"
+// import expressListEndpoints from 'express-list-endpoints'
 
 const server = express()
 const PORT = process.env.PORT
@@ -25,6 +26,7 @@ mongoose.connection.on("connected", () => {
 
 server.listen(PORT, () => {
   console.log(`Server listens to ${PORT}`)
+  // console.table(expressListEndpoints(server))
 })
 
 mongoose.connection.on("error", (err) => {
