@@ -1,22 +1,20 @@
-/** @format */
 import express from "express";
 import PostModel from './schema.js'
+import ProfileModel from '../Profiles/schema.js'
 import createHttpError from 'http-errors'
 import q2m from 'query-to-mongo'
 import { parser, cloudinary } from '../utils/cloudinary.js'
 
 const postsRouter = express.Router();
 
-//posts endpoints
+// POSTS ENDPOINTS
 postsRouter.post('/:username', parser.single('postImage'), async (req, res, next) => {
     try {
         const newPost = new PostModel(req.body)
-        console.log(newPost)
         newPost.username = req.params.username
         newPost.image = req?.file?.path || ''
         newPost.filename = req?.file?.filename || ''
         await newPost.save()
-        console.log(newPost)
         res.status(201).send(newPost)
     } catch (error) {
         next(error)
@@ -38,58 +36,45 @@ postsRouter.get('/', async (req, res, next) => {
     }
 })
 
-postsRouter.get('/:postId', async (req, res, next) => {
+postsRouter.route(':postId')
+.get(async (req, res, next) => {
     try {
         const foundPost = await PostModel.findById(req.params.postId).populate('user')
-        if (foundPost) {
-            res.send(foundPost)
-        } else {
-            next(createHttpError(404, `This post no longer exists.`))
-        }
+        if (!foundPost) return next(createHttpError(404, `This post no longer exists.`))
+        res.send(foundPost)            
     } catch (error) {
         next(error)
     }
 })
-
-postsRouter.put('/:postId', async (req, res, next) => {
+.put(async (req, res, next) => {
     try {
         const body = { ...req.body, image: req.file ? req.file.path : req.body.image }
         const editedPost = await PostModel.findByIdAndUpdate(req.params.postId, body, { new: true })
-        if (editedPost) {
-            res.send(editedPost)
-        } else {
-            next(createHttpError(404, `This post no longer exists and cannot be edited.`))
-        }
+        if (!editedPost) return next(createHttpError(404, `This post no longer exists and cannot be edited.`))
+        res.send(editedPost)
     } catch (error) {
         next(error)
     }
 })
-
-postsRouter.delete('/:postId', async (req, res, next) => {
+.delete(async (req, res, next) => {
     try {
         const deletedPost = await PostModel.findByIdAndDelete(req.params.postId)
-        if (deletedPost) {
-            await cloudinary.uploader.destroy(deletedPost.filename)
-            res.status(204).send()
-        } else {
-            next(createHttpError(404, `This post does not exist or has already been deleted.`))
-        }
+        if (!deletedPost) return next(createHttpError(404, `This post does not exist or has already been deleted.`))
+        // TODO: CHECK IF POST HAS FILENAME
+        await cloudinary.uploader.destroy(deletedPost.filename)
+        res.status(204).send()
     } catch (error) {
-        console.log(error)
         next(error)
     }
 })
 
-//comments endpoints
+// COMMENTS ENDPOINTS
 postsRouter.post('/:username/:postId', async (req, res, next) => {
     try {
         const postToCommentOn = await PostModel.findByIdAndUpdate(req.params.postId, { $push: { comments: req.body } }, { new: true })
-        if (postToCommentOn) {
-            postToCommentOn.username = req.params.username
-            res.send(postToCommentOn)
-        } else {
-            next(createHttpError(404, `This post does not exist or has been deleted.`))
-        }
+        if (!postToCommentOn) return next(createHttpError(404, `This post does not exist or has been deleted.`))
+        postToCommentOn.username = req.params.username
+        res.send(postToCommentOn)
     } catch (error) {
         next(error)
     }
@@ -131,5 +116,67 @@ postsRouter.delete('/:postId/comments/:commentId', async (req, res, next) => {
     const modifiedPost = await PostModel.findByIdAndUpdate(req.params.postId, { $pull: { comments: { _id: req.params.commentId } } }, { new: true })
     modifiedPost ? res.send(modifiedPost) : next(createHttpError(404, `This post does not exist or has been deleted.`))
 })
+
+
+//likes endpoints
+postsRouter.post('/:username/:postId/like', async (req, res, next) => {
+    try {
+        const user = await ProfileModel.findOne({ username: req.params.username })
+        const post = await PostModel.findById(req.params.postId)
+        if (user && post) {
+            const userLikesPost = await PostModel.findOne({ likes: user._id.toString() })
+            if (userLikesPost) {
+                await PostModel.findByIdAndUpdate(req.params.postId, { $pull: { likes: user._id } })
+                await ProfileModel.findOneAndUpdate(req.params.username, { $pull: { likedPosts: post._id } })
+                res.send(`You unliked post with id ${ req.params.postId }`)
+            } else {
+                await PostModel.findByIdAndUpdate(req.params.postId, { $push: { likes: user._id } })
+                await ProfileModel.findOneAndUpdate(req.params.username, { $push: { likedPosts: post._id } })
+                res.send(`You like post with id ${ req.params.postId }`)
+            }
+        } else {
+            next(createHttpError(404, `Post with id ${ req.params.postId } not found`))
+        }
+    } catch (error) {
+        next(error)
+    }
+})
+
+postsRouter.post('/:username/:postId/comments/:commentId/like', async (req, res, next) => {
+    try {
+        const user = await ProfileModel.findOne({ username: req.params.username })
+        const post = await PostModel.findById(req.params.postId)
+        if (user && post) {
+            const commentIndex = post.comments.findIndex(c => c._id.toString() === req.params.commentId)
+            if (commentIndex !== -1) {
+                if (post.comments[commentIndex].likes.includes(user._id)) {
+                    const likerIndex = post.comments[commentIndex].likes.findIndex(l => l.toString() === user._id.toString())
+                    post.comments[commentIndex].likes.splice(likerIndex, 1)
+                    await post.save()
+                    res.send(post.comments[commentIndex])
+                } else {
+                    post.comments[commentIndex].likes.push(user._id)
+                    await post.save()
+                    res.send(post.comments[commentIndex])
+                }
+            } else {
+                next(createHttpError(404, `Comment does not exist or has been deleted.`))
+            }
+        } else {
+            next(createHttpError(404, `Post with id ${ req.params.postId } not found`))
+        }
+    } catch (error) {
+        next(error)
+    }
+})
+
+
+
+
+
+
+
+
+
 
 export default postsRouter;
