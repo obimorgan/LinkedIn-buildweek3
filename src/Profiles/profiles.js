@@ -11,10 +11,11 @@ profilesRouter.route("/")
 .get(async (req, res, next) => {
   try {
     const profiles = await ProfilesModel.find()
-    .populate('following')
-    .populate('followers')
+    .populate('connections')
+    .populate('connectionsSent')
+    .populate('connectionsReceived')
     .populate('applications')
-    res.status(200).send(profiles)
+    res.send(profiles)
   } catch (error) {
     next(error)
   }
@@ -90,44 +91,43 @@ profilesRouter.get('/:userName/pdf', async (req, res, next) => {
   }
 })
 
-// TODO: If User is following someone then they must unfollow them if they hit the endpoint again
-profilesRouter.post('/:profilesId/follow', async (req, res, next) => {
+profilesRouter.post('/:profilesId/connect', async (req, res, next) => {
   try {
     const { profilesId } = req.params
     const { userId } = req.body
-    if (profilesId === userId ) return next(createHttpError(400, 'You cannot follow yourself'))
-    const follower = await ProfilesModel.findByIdAndUpdate(
+    if (profilesId === userId ) return next(createHttpError(400, 'You cannot connect with yourself'))
+    const connectionReceived = await ProfilesModel.findByIdAndUpdate(
       profilesId,
-      { $push: { followers: userId } }  
+      { $push: { connectionsReceived: userId } }  
     )
-    if (!follower) return next(createHttpError(404, `The user with id ${profilesId} could not be found`))
-    const following = await ProfilesModel.findByIdAndUpdate(
+    if (!connectionReceived) return next(createHttpError(404, `The user with id ${profilesId} could not be found`))
+    const connectionSent = await ProfilesModel.findByIdAndUpdate(
       userId,
-      { $push: { following: profilesId } }  
+      { $push: { connectionsSent: profilesId } }  
     )
-    if (!following) return next(createHttpError(404, `The user with id ${userId} could not be found`))
-    res.send(`You are now following the user with ID ${profilesId}`)
+    if (!connectionSent) return next(createHttpError(404, `The user with id ${userId} could not be found`))
+    res.send(`You have sent a connection request to the user with ID ${profilesId}`)
   } catch (error) {
     next(error)
   }
 })
 
-profilesRouter.post('/:profilesId/unfollow', async (req, res, next) => {
+profilesRouter.post('/:profilesId/unconnect', async (req, res, next) => {
   try {
     const { profilesId } = req.params
     const { userId } = req.body
-    if (profilesId === userId ) return next(createHttpError(400, 'You cannot unfollow yourself'))
-    const unFollower = await ProfilesModel.findByIdAndUpdate(
+    if (profilesId === userId ) return next(createHttpError(400, 'You cannot withdraw a connection with yourself'))
+    const unconnectFrom = await ProfilesModel.findByIdAndUpdate(
       profilesId,
-      { $pull: { followers: userId } }  
+      { $pull: { connectionsReceived: userId } }  
     )
-    if (!unFollower) return next(createHttpError(404, `The user with id ${profilesId} could not be found`))
-    const unFollowing = await ProfilesModel.findByIdAndUpdate(
+    if (!unconnectFrom) return next(createHttpError(404, `The user with id ${profilesId} could not be found`))
+    const unconnectSender = await ProfilesModel.findByIdAndUpdate(
       userId,
-      { $pull: { following: profilesId } }  
+      { $pull: { connectionsSent: profilesId } }  
     )
-    if (!unFollowing) return next(createHttpError(404, `The user with id ${userId} could not be found`))
-    res.send(`You are now unfollowing the user with ID ${profilesId}`)
+    if (!unconnectSender) return next(createHttpError(404, `The user with id ${userId} could not be found`))
+    res.send(`You have withdrawn your connection request to the user with ID ${profilesId}`)
   } catch (error) {
     next(error)
   }

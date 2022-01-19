@@ -12,8 +12,9 @@ const PofilesModel = new Schema({
     image: String,
     filename: String,
     username: { type: String, required: true, unique: true, sparse: true },
-    following: [{ type: Schema.Types.ObjectId, ref: 'Profile' }],
-    followers: [{ type: Schema.Types.ObjectId, ref: 'Profile' }],
+    connections: [{ type: Schema.Types.ObjectId, ref: 'Profile' }],
+    connectionsSent: [{ type: Schema.Types.ObjectId, ref: 'Profile' }],
+    connectionsReceived: [{ type: Schema.Types.ObjectId, ref: 'Profile' }],
     experiences: [{
       role: { type: String, required: true },
       company: { type: String, required: true },
