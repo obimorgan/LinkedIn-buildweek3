@@ -11,6 +11,7 @@ profilesRouter.route("/").get(async (req, res, next) => {
     const profiles = await ProfilesModel.find()
     .populate('following')
     .populate('followers')
+    .populate('applications')
     res.status(200).send(profiles);
   } catch (error) {
     console.log(error);

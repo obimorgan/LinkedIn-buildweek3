@@ -14,37 +14,20 @@ const PofilesModel = new Schema(
     area: { type: String, required: true },
     image: { type: String, required: false },
     username: { type: String, required: true, unique: true, sparse: true },
-    following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }],
-    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }],
+    following: [{ type: Schema.Types.ObjectId, ref: 'Profile' }],
+    followers: [{ type: Schema.Types.ObjectId, ref: 'Profile' }],
     experiences: [{
-      role: {
-          type: String,
-          required: true
-      },
-      company: {
-          type: String,
-          required: true
-      },
-      startDate: {
-          type: Date,
-          required: true
-      },
+      role: { type: String, required: true },
+      company: { type: String, required: true },
+      startDate: { type: Date, required: true },
       endDate: Date,
-      description: {
-          type: String,
-          required: true
-      },
-      area: {
-          type: String,
-          required: true
-      },
+      description: { type: String, required: true },
+      area: { type: String, required: true },
       image: String,
       filename: String
-  }]
-  },
-  {
-    timestamps: true,
-  }
+    }],
+    applications: [{ type: Schema.Types.ObjectId, ref: 'Job' }]
+  }, { timestamps: true }
 );
 
 export default model("Profile", PofilesModel);
