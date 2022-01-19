@@ -1,4 +1,3 @@
-/** @format */
 import express from "express";
 import PostModel from './schema.js'
 import createHttpError from 'http-errors'
@@ -7,16 +6,14 @@ import { parser, cloudinary } from '../utils/cloudinary.js'
 
 const postsRouter = express.Router();
 
-//posts endpoints
+// POSTS ENDPOINTS
 postsRouter.post('/:username', parser.single('postImage'), async (req, res, next) => {
     try {
         const newPost = new PostModel(req.body)
-        console.log(newPost)
         newPost.username = req.params.username
         newPost.image = req?.file?.path || ''
         newPost.filename = req?.file?.filename || ''
         await newPost.save()
-        console.log(newPost)
         res.status(201).send(newPost)
     } catch (error) {
         next(error)
@@ -38,58 +35,45 @@ postsRouter.get('/', async (req, res, next) => {
     }
 })
 
-postsRouter.get('/:postId', async (req, res, next) => {
+postsRouter.route(':postId')
+.get(async (req, res, next) => {
     try {
         const foundPost = await PostModel.findById(req.params.postId).populate('user')
-        if (foundPost) {
-            res.send(foundPost)
-        } else {
-            next(createHttpError(404, `This post no longer exists.`))
-        }
+        if (!foundPost) return next(createHttpError(404, `This post no longer exists.`))
+        res.send(foundPost)            
     } catch (error) {
         next(error)
     }
 })
-
-postsRouter.put('/:postId', async (req, res, next) => {
+.put(async (req, res, next) => {
     try {
         const body = { ...req.body, image: req.file ? req.file.path : req.body.image }
         const editedPost = await PostModel.findByIdAndUpdate(req.params.postId, body, { new: true })
-        if (editedPost) {
-            res.send(editedPost)
-        } else {
-            next(createHttpError(404, `This post no longer exists and cannot be edited.`))
-        }
+        if (!editedPost) return next(createHttpError(404, `This post no longer exists and cannot be edited.`))
+        res.send(editedPost)
     } catch (error) {
         next(error)
     }
 })
-
-postsRouter.delete('/:postId', async (req, res, next) => {
+.delete(async (req, res, next) => {
     try {
         const deletedPost = await PostModel.findByIdAndDelete(req.params.postId)
-        if (deletedPost) {
-            await cloudinary.uploader.destroy(deletedPost.filename)
-            res.status(204).send()
-        } else {
-            next(createHttpError(404, `This post does not exist or has already been deleted.`))
-        }
+        if (!deletedPost) return next(createHttpError(404, `This post does not exist or has already been deleted.`))
+        // TODO: CHECK IF POST HAS FILENAME
+        await cloudinary.uploader.destroy(deletedPost.filename)
+        res.status(204).send()
     } catch (error) {
-        console.log(error)
         next(error)
     }
 })
 
-//comments endpoints
+// COMMENTS ENDPOINTS
 postsRouter.post('/:username/:postId', async (req, res, next) => {
     try {
         const postToCommentOn = await PostModel.findByIdAndUpdate(req.params.postId, { $push: { comments: req.body } }, { new: true })
-        if (postToCommentOn) {
-            postToCommentOn.username = req.params.username
-            res.send(postToCommentOn)
-        } else {
-            next(createHttpError(404, `This post does not exist or has been deleted.`))
-        }
+        if (!postToCommentOn) return next(createHttpError(404, `This post does not exist or has been deleted.`))
+        postToCommentOn.username = req.params.username
+        res.send(postToCommentOn)
     } catch (error) {
         next(error)
     }
