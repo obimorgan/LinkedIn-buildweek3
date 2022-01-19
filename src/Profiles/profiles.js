@@ -34,6 +34,37 @@ profilesRouter.route("/")
     }
 })
 
+profilesRouter.post('/connections/:connectionUserId/accept', async (req, res, next ) => {
+  try {
+    const { connectionUserId } = req.params
+    const { userId } = req.body
+    const user = await ProfilesModel.findByIdAndUpdate(
+      userId,
+      { $pull: { connectionsReceived: connectionUserId } }
+    )
+    const user2 = await ProfilesModel.findByIdAndUpdate(
+      userId,
+      { $push: { connections: connectionUserId } }
+    )
+    if (!user) return next(createHttpError(404, 'Can\'t fiind a user with the ID you provided'))
+    const secondUser = await ProfilesModel.findByIdAndUpdate(
+      connectionUserId,
+      { $pull: { connectionsSent: userId } }
+    )
+    const secondUser2 = await ProfilesModel.findByIdAndUpdate(
+      connectionUserId,
+      { $push: { connections: userId } }
+    )
+    if (!secondUser) return next(createHttpError(404, 'Can\'t fiind a user with the ID you provided'))
+    res.send('You are now connected')
+  } catch (error) {
+    console.log(error);
+    next(error)
+  }
+})
+
+
+// TODO: IF USERS ARE CONNECTED AND ONE UNCONNECTS, REMOVE FROM BOTH PARTIES
 
 profilesRouter.route("/:userName")
 .get(async (req, res, next) => {
