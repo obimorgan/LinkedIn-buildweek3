@@ -11,7 +11,10 @@ const profilesRouter = express.Router({ mergeParams: true });
 
 profilesRouter.route("/").get(async (req, res, next) => {
   try {
-    const profiles = await ProfilesModel.find();
+    const profiles = await ProfilesModel.find()
+    .populate('following')
+    .populate('followers')
+    .populate('applications')
     res.status(200).send(profiles);
   } catch (error) {
     console.log(error);
@@ -159,4 +162,48 @@ profilesRouter.get('/:userName/pdf', async (req, res, next) => {
 //     }
 //   }
 // );
+
+// TODO: If User is following someone then they must unfollow them if they hit the endpoint again
+profilesRouter.post('/:profilesId/follow', async (req, res, next) => {
+  try {
+    const { profilesId } = req.params
+    const { userId } = req.body
+    if (profilesId === userId ) return next(createHttpError(400, 'You cannot follow yourself'))
+    const follower = await ProfilesModel.findByIdAndUpdate(
+      profilesId,
+      { $push: { followers: userId } }  
+    )
+    if (!follower) return next(createHttpError(404, `The user with id ${profilesId} could not be found`))
+    const following = await ProfilesModel.findByIdAndUpdate(
+      userId,
+      { $push: { following: profilesId } }  
+    )
+    if (!following) return next(createHttpError(404, `The user with id ${userId} could not be found`))
+    res.send(`You are now following the user with ID ${profilesId}`)
+  } catch (error) {
+    next(error)
+  }
+})
+
+profilesRouter.post('/:profilesId/unfollow', async (req, res, next) => {
+  try {
+    const { profilesId } = req.params
+    const { userId } = req.body
+    if (profilesId === userId ) return next(createHttpError(400, 'You cannot unfollow yourself'))
+    const unFollower = await ProfilesModel.findByIdAndUpdate(
+      profilesId,
+      { $pull: { followers: userId } }  
+    )
+    if (!unFollower) return next(createHttpError(404, `The user with id ${profilesId} could not be found`))
+    const unFollowing = await ProfilesModel.findByIdAndUpdate(
+      userId,
+      { $pull: { following: profilesId } }  
+    )
+    if (!unFollowing) return next(createHttpError(404, `The user with id ${userId} could not be found`))
+    res.send(`You are now unfollowing the user with ID ${profilesId}`)
+  } catch (error) {
+    next(error)
+  }
+})
+
 export default profilesRouter;

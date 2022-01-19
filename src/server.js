@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import postsRouter from "./Posts/posts.js";
 import profilesRouter from "./Profiles/profiles.js";
 import experienceRouter from "./Profiles/experienece.js";
+import jobsRouter from './jobs/jobs.js'
 import { errorHandlers } from "./middlewares/errorHandlers.js";
 
 const server = express();
@@ -15,6 +16,7 @@ server.use(express.json());
 
 server.use("/posts", postsRouter);
 server.use("/profiles", profilesRouter, experienceRouter);
+server.use("/jobs", jobsRouter);
 
 server.use(errorHandlers);
 
