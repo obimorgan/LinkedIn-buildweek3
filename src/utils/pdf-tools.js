@@ -1,7 +1,9 @@
+/** @format */
 
-import PdfPrinter from 'pdfmake'
-import path from 'path'
-import imageToBase64 from 'image-to-base64'
+import PdfPrinter from "pdfmake";
+import path from "path";
+import imageToBase64 from "image-to-base64";
+import { compareAsc, format, startOfISOWeek } from "date-fns";
 
 export const encodeImage = async (imgUrl) => {
   try {
@@ -66,8 +68,17 @@ export const getPDFReadableStream = (data, encodedImage) => {
         text: `Experiences`,
         style: "header",
       },
-      data.experiences.map(exp => {
-        return { text: `${exp.role}`}
+      data.experiences.map((exp) => {
+        return [
+          {
+            text: `Company Name: ${exp.company}, Role: ${exp.role}, ${exp.company}, Area: ${exp.area} `,
+          },
+          // {
+          //   style: {
+          //     color: 'blue'
+          //   }
+          // }
+        ];
       }),
     ],
     styles: {
