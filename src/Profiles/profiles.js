@@ -12,6 +12,16 @@ const profilesRouter = express.Router({ mergeParams: true })
 
 profilesRouter.use('/connections/:connectionUserId', connectionRouter)
 
+profilesRouter.get('/email', async (req, res, next) => {
+  try {
+    const user = await ProfilesModel.findOne({ email: req.query.email })
+    if (!user) return next(createHttpError(400, 'No user found'))
+    res.send(user)
+  } catch (error) {
+    next(error)
+  }
+})
+
 profilesRouter.route("/")
 .get(async (req, res, next) => {
   try {
