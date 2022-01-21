@@ -6,6 +6,7 @@ import profilesRouter from "./Profiles/profiles.js"
 import experienceRouter from "./Profiles/experienece.js"
 import jobsRouter from './jobs/jobs.js'
 import { errorHandlers } from "./middlewares/errorHandlers.js"
+import searchRouter from "./search/search.js"
 // import expressListEndpoints from 'express-list-endpoints'
 
 const server = express()
@@ -16,6 +17,7 @@ server.use(express.json())
 server.use("/posts", postsRouter)
 server.use("/profiles", profilesRouter, experienceRouter)
 server.use("/jobs", jobsRouter)
+server.use("/search", searchRouter)
 
 server.use(errorHandlers)
 
