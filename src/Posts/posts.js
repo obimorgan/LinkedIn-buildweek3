@@ -34,7 +34,7 @@ postsRouter.get('/', async (req, res, next) => {
         const posts = await PostModel.find(mongoQuery.criteria)
             .limit(mongoQuery.options.limit)
             .skip(mongoQuery.options.skip)
-            .sort(mongoQuery.options.sort)
+            .sort({ createdAt: -1 })
             .populate('user', { image: 1, _id: 0 })
         res.send({ link: mongoQuery.links('/posts', noOfPosts), pageTotal: Math.ceil(noOfPosts / mongoQuery.options.limit), noOfPosts, posts })
     } catch (error) {
