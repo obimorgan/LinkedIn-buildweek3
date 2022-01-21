@@ -87,7 +87,6 @@ postsRouter.post('/:postId/comments', createCommentValidator, async (req, res, n
         if (!errors.isEmpty()) return next(createHttpError(400, errors))
         const postToCommentOn = await PostModel.findByIdAndUpdate(req.params.postId, { $push: { comments: req.body } }, { new: true })
         if (!postToCommentOn) return next(createHttpError(404, `This post does not exist or has been deleted.`))
-        postToCommentOn.username = req.params.username
         res.send(postToCommentOn)
     } catch (error) {
         next(error)
