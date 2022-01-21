@@ -81,7 +81,7 @@ postsRouter.route('/:postId')
     })
 
 // COMMENTS ENDPOINTS
-postsRouter.post('/:username/:postId', createCommentValidator, async (req, res, next) => {
+postsRouter.post('/:postId/comments', createCommentValidator, async (req, res, next) => {
     try {
         const errors = validationResult(req)
         if (!errors.isEmpty()) return next(createHttpError(400, errors))
