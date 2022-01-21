@@ -27,7 +27,7 @@ experienceRouter.route("/:userName/experiences")
 .get(async (req, res, next) => {
   try {
     const { userName } = req.params
-    const user = await ProfilesModel.findOne({ userName: userName })
+    const user = await ProfilesModel.findOne({ username: userName })
     if (!user) return next(createHttpError(404,`The user with username ${userName} does not exist`))
     res.send(user.experiences)
   } catch (error) {
@@ -71,11 +71,11 @@ experienceRouter.route("/:userName/experiences/:experienceId")
     next(error)
   }
 })
-.put(async (req, res, next) => {
+.put(parser.single("experienceCover"), async (req, res, next) => {
   try {
     const { userName, experienceId } = req.params
     if (experienceId.length !== 24) return next(createHttpError(400, "Invalid ID"))
-    const user = await ProfilesModel.findOne({ userName: userName })
+    const user = await ProfilesModel.findOne({ username: userName })
     const experienceIndex = user.experiences.findIndex(({ _id }) => _id.toString() === experienceId)
     user.experiences[experienceIndex] = {
       ...user.experiences[experienceIndex].toObject(),

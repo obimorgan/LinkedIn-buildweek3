@@ -5,7 +5,7 @@ const { Schema, model } = mongoose
 const PofilesModel = new Schema({
     name: { type: String, required: true },
     surname: { type: String, required: true },
-    email: { type: String, required: true },
+    email: { type: String, required: true, unique: true, sparse: true },
     bio: { type: String, required: true },
     title: { type: String, required: true },
     area: { type: String, required: true },
